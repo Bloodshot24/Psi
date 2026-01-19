@@ -10,9 +10,10 @@ namespace PSI_Arthur_Bastien
     {
         static void Main(string[] args)
         {
-            Console.Write("Hello");
-            Console.ReadKey();
+            Console.WriteLine("Hello");
             Console.WriteLine("oh bouffon tu veux pas utiliser une VM pour avoir Visual Studio ? ");
+            Console.ReadKey();
+
         }
     }
 }
