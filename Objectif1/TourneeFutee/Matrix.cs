@@ -3,7 +3,7 @@
     public class Matrix
     {
         // TODO : ajouter tous les attributs que vous jugerez pertinents 
-        private List<int> data; // matrice de données
+        private List<List<int>> data; // matrice de données
         private float defaultValue; // valeur par défaut pour les nouvelles cases
         private int nbColumns; // nombre de colonnes
         private int nbRows; // nombre de lignes
@@ -14,12 +14,18 @@
          */
         public Matrix(int nbRows = 0, int nbColumns = 0, float defaultValue = 0)
         {
-            if (nbRows < 0 || nbColumns < 0)
+            this.data = new List<List<int>>(nbRows);
+            for (int i = 0; i < nbRows; i++)
             {
-                Console.WriteLine("Les dimensions doivent être positives");
+                this.data.Add(new List<int>(nbColumns));
+                for (int j = 0; j < nbColumns; j++)
+                {
+                    this.data[i].Add((int)defaultValue);
+                }
             }
-            this.data = new List<int>(nbRows * nbColumns);
             this.defaultValue = defaultValue;
+            this.nbRows = nbRows;
+            this.nbColumns = nbColumns;
         }
 
         // Propriété : valeur par défaut utilisée pour remplir les nouvelles cases
@@ -42,7 +48,7 @@
         // Lecture seule
         public int NbColumns
         {
-            get; // TODO : implémenter
+            get { return this.nbColumns; } // TODO : implémenter
                  // pas de set
         }
 
@@ -53,7 +59,7 @@
          */
         public void AddRow(int i)
         {
-            // TODO : implémenter
+        
         }
 
         /* Insère une colonne à l'indice `j`. Décale les colonnes suivantes vers la droite.
