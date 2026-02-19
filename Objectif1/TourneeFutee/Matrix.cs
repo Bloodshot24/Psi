@@ -3,10 +3,8 @@
     public class Matrix
     {
         // TODO : ajouter tous les attributs que vous jugerez pertinents 
-        private List<List<int>> data; // matrice de données
+        private List<List<float>> data; // matrice de données
         private float defaultValue; // valeur par défaut pour les nouvelles cases
-        private int nbColumns; // nombre de colonnes
-        private int nbRows; // nombre de lignes
 
         /* Crée une matrice de dimensions `nbRows` x `nbColums`.
          * Toutes les cases de cette matrice sont remplies avec `defaultValue`.
@@ -20,18 +18,16 @@
                 }
             else{
 
-                this.data = new List<List<int>>(nbRows);
+                this.data = new List<List<float>>(nbRows);
                 for (int i = 0; i < nbRows; i++)
                 {
-                    this.data.Add(new List<int>(nbColumns));
+                    this.data.Add(new List<float>(nbColumns));
                     for (int j = 0; j < nbColumns; j++)
                     {
-                        this.data[i].Add((int)defaultValue);
+                        this.data[i].Add(defaultValue);
                     }
                 }
                 this.defaultValue = defaultValue;
-                this.nbRows = nbRows;
-                this.nbColumns = nbColumns;
 
             }
         }
@@ -67,9 +63,9 @@
          */
         public void AddRow(int j)
         {
-            List<int> newRow = new List<int>(this.NbColumns);
+            List<float> newRow = new List<float>(this.NbColumns);
             for (int k = 0; k < this.NbColumns; k++){
-                newRow.Add((int)this.DefaultValue);
+                newRow.Add(this.DefaultValue);
             }
 
             if(j < 0 || j > this.NbRows)
@@ -83,10 +79,6 @@
             else
             {
                 this.data.Insert(j,newRow);
-                for (int k = 0; k < this.NbColumns; k++)
-                {
-                    this.data[j].Add((int)this.DefaultValue);
-                }
             }
         }
 
@@ -105,14 +97,14 @@
                 {
                     for (int i = 0; i < this.NbRows; i++)
                     {
-                        this.data[i].Add((int)this.DefaultValue);
+                        this.data[i].Add(this.DefaultValue);
                     }
                 }
                 else
                 {
                     for (int i = 0; i < this.NbRows; i++)
                     {
-                        this.data[i].Insert(j,(int)this.DefaultValue);
+                        this.data[i].Insert(j, this.DefaultValue);
                     }
                 }
             // TODO : implémenter
@@ -122,6 +114,9 @@
         // Lève une ArgumentOutOfRangeException si `i` est en dehors des indices valides
         public void RemoveRow(int i)
         {
+            if (i < 0 || i >= this.NbRows) throw new ArgumentOutOfRangeException();
+            data.RemoveAt(i);
+
             // TODO : implémenter
         }
 
@@ -130,26 +125,29 @@
         public void RemoveColumn(int j)
         {
             // TODO : implémenter
-            if (j < 0 || j >= nbColumns) throw new ArgumentOutOfRangeException();
-            for (int i = 0; i < nbRows; i++)
+            if (j < 0 || j >= this.NbColumns) throw new ArgumentOutOfRangeException();
+            for (int i = 0; i < this.NbRows; i++)
             {
                 data[i].RemoveAt(j);
             }
-            nbColumns--;
         }
 
         // Renvoie la valeur à la ligne `i` et colonne `j`
         // Lève une ArgumentOutOfRangeException si `i` ou `j` est en dehors des indices valides
         public float GetValue(int i, int j)
         {
+            if (i < 0 || i >= this.NbRows || j < 0 || j >= this.NbColumns) throw new ArgumentOutOfRangeException();
+            
             // TODO : implémenter
-            return 0.0f;
+            return this.data[i][j];
         }
 
         // Affecte la valeur à la ligne `i` et colonne `j` à `v`
         // Lève une ArgumentOutOfRangeException si `i` ou `j` est en dehors des indices valides
         public void SetValue(int i, int j, float v)
         {
+            if (i < 0 || i >= this.NbRows || j < 0 || j >= this.NbColumns) throw new ArgumentOutOfRangeException();
+             this.data[i][j] = v;
             // TODO : implémenter
             
 
@@ -159,9 +157,9 @@
         public void Print()
         {
             // TODO : implémenter
-            for (int i = 0; i < this.nbRows; i++)
+            for (int i = 0; i < this.NbRows; i++)
             {
-                for (int j = 0; j < this.nbColumns; j++)
+                for (int j = 0; j < this.NbColumns; j++)
                 {
                     Console.Write(this.data[i][j]+" ");
                 }
