@@ -3,10 +3,7 @@
     public class Matrix
     {
         // TODO : ajouter tous les attributs que vous jugerez pertinents 
-        private List<int> data; // matrice de données
-        private float defaultValue; // valeur par défaut pour les nouvelles cases
-        private int nbColumns; // nombre de colonnes
-        private int nbRows; // nombre de lignes
+
 
         /* Crée une matrice de dimensions `nbRows` x `nbColums`.
          * Toutes les cases de cette matrice sont remplies avec `defaultValue`.
@@ -14,19 +11,14 @@
          */
         public Matrix(int nbRows = 0, int nbColumns = 0, float defaultValue = 0)
         {
-            if (nbRows < 0 || nbColumns < 0)
-            {
-                Console.WriteLine("Les dimensions doivent être positives");
-            }
-            this.data = new List<int>(nbRows * nbColumns);
-            this.defaultValue = defaultValue;
+            // TODO : implémenter
         }
 
         // Propriété : valeur par défaut utilisée pour remplir les nouvelles cases
         // Lecture seule
         public float DefaultValue
         {
-            get { return this.defaultValue; } // TODO : implémenter
+            get; // TODO : implémenter
                  // pas de set
         }
 
@@ -34,7 +26,7 @@
         // Lecture seule
         public int NbRows
         {
-            get { return this.data.Count / this.NbColumns; } // TODO : implémenter
+            get; // TODO : implémenter
                  // pas de set
         }
 
@@ -98,7 +90,8 @@
         // Affiche la matrice
         public void Print()
         {
-            // TODO : implémenter
+            // TODO : implémenter zorubvzuiobvzorb 
+            
         }
 
 
