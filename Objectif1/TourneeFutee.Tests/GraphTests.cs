@@ -1,4 +1,4 @@
-﻿namespace TourneeFutee.Tests
+﻿    namespace TourneeFutee.Tests
 {
     // Campagne de tests unitaires vérifiant le bon fonctionnement de la classe Graph
     [TestClass]
