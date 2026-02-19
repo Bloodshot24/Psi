@@ -84,6 +84,12 @@
         public void RemoveColumn(int j)
         {
             // TODO : implémenter
+            if (j < 0 || j >= nbColumns) throw new ArgumentOutOfRangeException();
+            for (int i = 0; i < nbRows; i++)
+            {
+                data[i].RemoveAt(j);
+            }
+            nbColumns--;
         }
 
         // Renvoie la valeur à la ligne `i` et colonne `j`
@@ -99,12 +105,24 @@
         public void SetValue(int i, int j, float v)
         {
             // TODO : implémenter
+            
+
         }
 
         // Affiche la matrice
         public void Print()
         {
             // TODO : implémenter
+            for (int i = 0; i < this.nbRows; i++)
+            {
+                for (int j = 0; j < this.nbColumns; j++)
+                {
+                    Console.Write(this.data[i][j]+" ");
+                }
+                Console.WriteLine();
+
+            }
+
         }
 
 
