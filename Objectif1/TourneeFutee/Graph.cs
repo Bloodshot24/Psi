@@ -22,7 +22,7 @@
             this.directed = directed;
             this.noEdgeValue = noEdgeValue;
 
-            matrix = new Matrix(0, 0, noEdgeValue);
+            this.matrix = new Matrix(0, 0, noEdgeValue);
         }
 
 
@@ -79,6 +79,12 @@
         // Lève une ArgumentException si le sommet n'a pas été trouvé dans le graphe
         public void RemoveVertex(string name)
         {
+            if(!names.Contains(name))
+                throw new ArgumentException();
+            int index = GetIndex(name);
+            names.RemoveAt(index);
+            values.RemoveAt(index);
+            matrix.RemoveRow(index);
             // TODO : implémenter
         }
 
@@ -86,8 +92,11 @@
         // Lève une ArgumentException si le sommet n'a pas été trouvé dans le graphe
         public float GetVertexValue(string name)
         {
+            if(!names.Contains(name))
+                throw new ArgumentException();
+            float value = values[GetIndex(name)];
             // TODO : implémenter
-            return 0.0f;
+            return values[GetIndex(name)];
         }
 
         // Affecte la valeur du sommet de nom `name` à `value`
