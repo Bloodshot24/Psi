@@ -14,18 +14,26 @@
          */
         public Matrix(int nbRows = 0, int nbColumns = 0, float defaultValue = 0)
         {
-            this.data = new List<List<int>>(nbRows);
-            for (int i = 0; i < nbRows; i++)
-            {
-                this.data.Add(new List<int>(nbColumns));
-                for (int j = 0; j < nbColumns; j++)
+                if (nbRows < 0 || nbColumns < 0)
                 {
-                    this.data[i].Add((int)defaultValue);
+                    throw new ArgumentOutOfRangeException("Les dimensions de la matrice ne peuvent pas être négatives.");
                 }
+            else{
+
+                this.data = new List<List<int>>(nbRows);
+                for (int i = 0; i < nbRows; i++)
+                {
+                    this.data.Add(new List<int>(nbColumns));
+                    for (int j = 0; j < nbColumns; j++)
+                    {
+                        this.data[i].Add((int)defaultValue);
+                    }
+                }
+                this.defaultValue = defaultValue;
+                this.nbRows = nbRows;
+                this.nbColumns = nbColumns;
+
             }
-            this.defaultValue = defaultValue;
-            this.nbRows = nbRows;
-            this.nbColumns = nbColumns;
         }
 
         // Propriété : valeur par défaut utilisée pour remplir les nouvelles cases
@@ -40,7 +48,7 @@
         // Lecture seule
         public int NbRows
         {
-            get { return this.data.Count / this.NbColumns; } // TODO : implémenter
+            get { return this.data.Count; } // TODO : implémenter
                  // pas de set
         }
 
@@ -48,7 +56,7 @@
         // Lecture seule
         public int NbColumns
         {
-            get { return this.nbColumns; } // TODO : implémenter
+            get { return this.data.Count > 0 ? this.data[0].Count : 0; } // TODO : implémenter
                  // pas de set
         }
 
@@ -57,9 +65,29 @@
          * Si `i` = NbRows, insère une ligne en fin de matrice
          * Lève une ArgumentOutOfRangeException si `i` est en dehors des indices valides
          */
-        public void AddRow(int i)
+        public void AddRow(int j)
         {
-        
+            List<int> newRow = new List<int>(this.NbColumns);
+            for (int k = 0; k < this.NbColumns; k++){
+                newRow.Add((int)this.DefaultValue);
+            }
+
+            if(j < 0 || j > this.NbRows)
+            {
+                throw new ArgumentOutOfRangeException("L'indice de ligne est en dehors des indices valides.");
+            }
+            if(j== this.NbRows)
+            {
+                this.data.Add(newRow);
+            }
+            else
+            {
+                this.data.Insert(j,newRow);
+                for (int k = 0; k < this.NbColumns; k++)
+                {
+                    this.data[j].Add((int)this.DefaultValue);
+                }
+            }
         }
 
         /* Insère une colonne à l'indice `j`. Décale les colonnes suivantes vers la droite.
@@ -69,6 +97,24 @@
          */
         public void AddColumn(int j)
         {
+                if(j < 0 || j > this.NbColumns)
+                {
+                    throw new ArgumentOutOfRangeException("L'indice de colonne est en dehors des indices valides.");
+                }
+                if(j == this.NbColumns)
+                {
+                    for (int i = 0; i < this.NbRows; i++)
+                    {
+                        this.data[i].Add((int)this.DefaultValue);
+                    }
+                }
+                else
+                {
+                    for (int i = 0; i < this.NbRows; i++)
+                    {
+                        this.data[i].Insert(j,(int)this.DefaultValue);
+                    }
+                }
             // TODO : implémenter
         }
 
