@@ -11,13 +11,7 @@
         private bool directed;
         private float noEdgeValue;
 
-        public Graph(bool directed, float noEdgeValue = 0)
-        {
-            this.directed = directed;
-            this.noEdgeValue = noEdgeValue;
-
-            matrix = new Matrix(0, 0, noEdgeValue);
-        }
+       
 
         // --- Construction du graphe ---
 
