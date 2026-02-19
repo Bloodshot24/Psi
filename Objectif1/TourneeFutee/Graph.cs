@@ -5,6 +5,19 @@
 
         // TODO : ajouter tous les attributs que vous jugerez pertinents 
 
+        private List<string> names = new List<string>();
+        private List<float> values = new List<float>();
+        private Matrix matrix;
+        private bool directed;
+        private float noEdgeValue;
+
+        public Graph(bool directed, float noEdgeValue = 0)
+        {
+            this.directed = directed;
+            this.noEdgeValue = noEdgeValue;
+
+            matrix = new Matrix(0, 0, noEdgeValue);
+        }
 
         // --- Construction du graphe ---
 
@@ -12,8 +25,12 @@
         // La valeur `noEdgeValue` est le poids modélisant l'absence d'un arc (0 par défaut)
         public Graph(bool directed, float noEdgeValue = 0)
         {
-            // TODO : implémenter
+            this.directed = directed;
+            this.noEdgeValue = noEdgeValue;
+
+            matrix = new Matrix(0, 0, noEdgeValue);
         }
+
 
 
         // --- Propriétés ---
@@ -22,7 +39,7 @@
         // Lecture seule
         public int Order
         {
-            get;    // TODO : implémenter
+            get { return names.Count; }   // TODO : implémenter
                     // pas de set
         }
 
@@ -30,10 +47,21 @@
         // Lecture seule
         public bool Directed
         {
-            get;    // TODO : implémenter
+            get { return directed; }   // TODO : implémenter
                     // pas de set
         }
 
+
+        //Methode pour trouver rapidement l'index : 
+        private int GetIndex(string name)
+        {
+            int index = names.IndexOf(name);
+
+            if (index == -1)
+                throw new ArgumentException();
+
+            return index;
+        }
 
         // --- Gestion des sommets ---
 
@@ -42,6 +70,14 @@
         public void AddVertex(string name, float value = 0)
         {
             // TODO : implémenter
+            if (names.Contains(name))
+                throw new ArgumentException();
+
+            names.Add(name);
+            values.Add(value);
+
+            matrix.AddRow(Order - 1);
+            matrix.AddColumn(Order - 1);
         }
 
 
@@ -66,6 +102,9 @@
         {
             // TODO : implémenter
         }
+
+       
+
 
 
         // Renvoie la liste des noms des voisins du sommet de nom `vertexName`
