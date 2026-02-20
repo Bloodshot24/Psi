@@ -22,7 +22,7 @@
             this.directed = directed;
             this.noEdgeValue = noEdgeValue;
 
-            matrix = new Matrix(0, 0, noEdgeValue);
+            this.matrix = new Matrix(0, 0, noEdgeValue);
         }
 
 
@@ -93,6 +93,9 @@
         // Lève une ArgumentException si le sommet n'a pas été trouvé dans le graphe
         public float GetVertexValue(string name)
         {
+            if(!names.Contains(name))
+                throw new ArgumentException();
+            float value = values[GetIndex(name)];
             // TODO : implémenter
             int index = GetIndex(name);
             return values[index];
