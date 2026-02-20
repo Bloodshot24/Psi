@@ -119,11 +119,19 @@
         // Lève une ArgumentException si le sommet n'a pas été trouvé dans le graphe
         public List<string> GetNeighbors(string vertexName)
         {
-            List<string> neighborNames = new List<string>();
+            List<string> neighbors = new List<string>();
 
-            // TODO : implémenter
+            int i = GetIndex(vertexName);
 
-            return neighborNames;
+            for (int j = 0; j < Order; j++)
+            {
+                if (matrix.GetValue(i, j) != noEdgeValue)
+                {
+                    neighbors.Add(names[j]);
+                }
+            }
+
+            return neighbors;
         }
 
         // --- Gestion des arcs ---
@@ -159,6 +167,16 @@
         public void RemoveEdge(string sourceName, string destinationName)
         {
             // TODO : implémenter
+            int i = GetIndex(sourceName);
+            int j = GetIndex(destinationName);
+
+            if (matrix.GetValue(i, j) == noEdgeValue)
+                throw new ArgumentException();
+
+            matrix.SetValue(i, j, noEdgeValue);
+
+            if (!directed)
+                matrix.SetValue(j, i, noEdgeValue);
         }
 
         /* Renvoie le poids de l'arc allant du sommet nommé `sourceName` au sommet nommé `destinationName`
@@ -170,7 +188,15 @@
         public float GetEdgeWeight(string sourceName, string destinationName)
         {
             // TODO : implémenter
-            return 0.0f;
+            int i = GetIndex(sourceName);
+            int j = GetIndex(destinationName);
+
+            float weight = matrix.GetValue(i, j);
+
+            if (weight == noEdgeValue)
+                throw new ArgumentException();
+
+            return weight;
         }
 
         /* Affecte le poids l'arc allant du sommet nommé `sourceName` au sommet nommé `destinationName` à `weight` 
@@ -180,6 +206,13 @@
         public void SetEdgeWeight(string sourceName, string destinationName, float weight)
         {
             // TODO : implémenter
+            int i = GetIndex(sourceName);
+            int j = GetIndex(destinationName);
+
+            matrix.SetValue(i, j, weight);
+
+            if (!directed)
+                matrix.SetValue(j, i, weight);
         }
 
         // TODO : ajouter toutes les méthodes que vous jugerez pertinentes 
