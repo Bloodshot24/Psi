@@ -79,6 +79,13 @@
         // Lève une ArgumentException si le sommet n'a pas été trouvé dans le graphe
         public void RemoveVertex(string name)
         {
+            int index = GetIndex(name);
+
+            names.RemoveAt(index);
+            values.RemoveAt(index);
+
+            matrix.RemoveRow(index);
+            matrix.RemoveColumn(index);
             // TODO : implémenter
         }
 
@@ -87,7 +94,8 @@
         public float GetVertexValue(string name)
         {
             // TODO : implémenter
-            return 0.0f;
+            int index = GetIndex(name);
+            return values[index];
         }
 
         // Affecte la valeur du sommet de nom `name` à `value`
@@ -95,6 +103,8 @@
         public void SetVertexValue(string name, float value)
         {
             // TODO : implémenter
+            int index = GetIndex(name);
+            values[index] = value;
         }
 
        
@@ -124,6 +134,17 @@
         public void AddEdge(string sourceName, string destinationName, float weight = 1)
         {
             // TODO : implémenter
+
+            int i = GetIndex(sourceName);
+            int j = GetIndex(destinationName);
+
+            if (matrix.GetValue(i, j) != noEdgeValue)
+                throw new ArgumentException();
+
+            matrix.SetValue(i, j, weight);
+
+            if (!directed)
+                matrix.SetValue(j, i, weight);
         }
 
         /* Supprime l'arc allant du sommet nommé `sourceName` au sommet nommé `destinationName` du graphe
