@@ -217,6 +217,11 @@
 
         // TODO : ajouter toutes les méthodes que vous jugerez pertinentes 
 
+        public List<string> Création()
+        {
+            return new List<string>(names);
+        }
+
     }
 
 

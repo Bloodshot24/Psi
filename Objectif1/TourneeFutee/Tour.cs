@@ -5,34 +5,51 @@
     {
         // TODO : ajouter tous les attributs que vous jugerez pertinents 
 
+        private float cost;
         private List<(string source, string destination)> segments;
-        private float coast; 
         // propriétés
+
+        public Tour()
+        {
+            this.segments = new List<(string source, string destination)>();
+            this.cost = 0;
+        }
 
         // Coût total de la tournée
         public float Cost
         {
-            get;    // TODO : implémenter
+            get { return cost; }
         }
 
         // Nombre de trajets dans la tournée
         public int NbSegments
         {
-            get;    // TODO : implémenter
+            get { return segments.Count; }
         }
 
 
         // Renvoie vrai si la tournée contient le trajet `source`->`destination`
         public bool ContainsSegment((string source, string destination) segment)
         {
-            return false;   // TODO : implémenter 
+            return segments.Contains(segment);
         }
 
 
         // Affiche les informations sur la tournée : coût total et trajets
         public void Print()
         {
-            // TODO : implémenter 
+            Console.WriteLine("Tour :");
+
+            foreach (var s in segments)
+                Console.WriteLine($"{s.source} -> {s.destination}");
+
+            Console.WriteLine($"Cost = {cost}");
+        }
+
+        public void AjouterSegment(string source, string destination, float weight)
+        {
+            segments.Add((source, destination));
+            cost += weight;
         }
 
         // TODO : ajouter toutes les méthodes que vous jugerez pertinentes 
