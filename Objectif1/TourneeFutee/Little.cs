@@ -8,7 +8,7 @@
 
         // Instancie le planificateur en spécifiant le graphe modélisant un problème de voyageur de commerce
         public Little(Graph graph)
-        {
+        {          
             // TODO : implémenter
         }
 
@@ -25,11 +25,57 @@
 
         // Réduit la matrice `m` et revoie la valeur totale de la réduction
         // Après appel à cette méthode, la matrice `m` est *modifiée*.
-        public static float ReduceMatrix(Matrix m)
+    public static float ReduceMatrix(Matrix m)
+    {
+        float reduction = 0;
+
+    
+        for (int i = 0; i < m.NbRows; i++)
         {
-            // TODO : implémenter
-            return 0.0f;
+            float min = float.PositiveInfinity;
+
+            for (int j = 0; j < m.NbColumns; j++)
+            {
+                if (m.GetValue(i, j) < min)
+                    min = m.GetValue(i, j);
+            }
+
+            if (min != float.PositiveInfinity && min > 0)
+            {
+                for (int j = 0; j < m.NbColumns; j++)
+                {
+                    float val = m.GetValue(i, j);
+                    m.SetValue(i, j, val - min);
+                }
+
+                reduction += min;
+            }
         }
+
+        for (int j = 0; j < m.NbColumns; j++)
+        {
+            float min = float.PositiveInfinity;
+
+            for (int i = 0; i < m.NbRows; i++)
+            {
+                if (m.GetValue(i, j) < min)
+                    min = m.GetValue(i, j);
+            }
+
+            if (min != float.PositiveInfinity && min > 0)
+            {
+                for (int i = 0; i < m.NbRows; i++)
+                {
+                    float val = m.GetValue(i, j);
+                    m.SetValue(i, j, val - min);
+                }
+
+                reduction += min;
+            }
+        }
+
+        return reduction;
+    }
 
         // Renvoie le regret de valeur maximale dans la matrice de coûts `m` sous la forme d'un tuple `(int i, int j, float value)`
         // où `i`, `j`, et `value` contiennent respectivement la ligne, la colonne et la valeur du regret maximale
