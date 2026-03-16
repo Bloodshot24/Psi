@@ -13,7 +13,7 @@
         }
 
         // Trouve la tournée optimale dans le graphe `this.graph`
-        // (c'est à dire le cycle hamiltonien de plus faible coût)
+        // (c'est à dire le cycle hamiltonien de plus faible coût) bonjour
         public Tour ComputeOptimalTour()
         {
             // TODO : implémenter
