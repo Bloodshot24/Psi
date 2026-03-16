@@ -7,13 +7,13 @@ namespace TourneeFutee
     public class Little
     {
         private Graph graph;
-        private int nbCities;
+        private int nbVilles;
 
         // Instancie le planificateur en spécifiant le graphe modélisant un problème de voyageur de commerce
         public Little(Graph graph)
         {
             this.graph = graph;
-            this.nbCities = graph.Order;
+            this.nbVilles = graph.Order;
         }
 
         // Trouve la tournée optimale dans le graphe `this.graph`

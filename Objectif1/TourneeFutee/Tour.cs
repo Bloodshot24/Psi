@@ -5,6 +5,8 @@
     {
         // TODO : ajouter tous les attributs que vous jugerez pertinents 
 
+        private List<(string source, string destination)> segments;
+        private float coast; 
         // propriétés
 
         // Coût total de la tournée
