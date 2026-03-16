@@ -1,3 +1,3 @@
 # Psi
 
-membres du groupe : Bastien GENOVA et Arthur FERRAND
+Membres du groupe : Bastien GENOVA et Arthur FERRAND

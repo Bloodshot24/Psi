@@ -1,4 +1,6 @@
-﻿namespace TourneeFutee
+﻿using System.Security.Cryptography;
+
+namespace TourneeFutee
 {
     // Résout le problème de voyageur de commerce défini par le graphe `graph`
     // en utilisant l'algorithme de Little
@@ -27,20 +29,99 @@
 
         // Réduit la matrice `m` et revoie la valeur totale de la réduction
         // Après appel à cette méthode, la matrice `m` est *modifiée*.
-        public static float ReduceMatrix(Matrix m)
+    public static float ReduceMatrix(Matrix m)
+    {
+        float reduction = 0;
+
+    
+        for (int i = 0; i < m.NbRows; i++)
         {
-            // TODO : implémenter
-            return 0.0f;
+            float min = float.PositiveInfinity;
+
+            for (int j = 0; j < m.NbColumns; j++)
+            {
+                if (m.GetValue(i, j) < min)
+                    min = m.GetValue(i, j);
+            }
+
+            if (min != float.PositiveInfinity && min > 0)
+            {
+                for (int j = 0; j < m.NbColumns; j++)
+                {
+                    float val = m.GetValue(i, j);
+                    m.SetValue(i, j, val - min);
+                }
+
+                reduction += min;
+            }
         }
+
+        for (int j = 0; j < m.NbColumns; j++)
+        {
+            float min = float.PositiveInfinity;
+
+            for (int i = 0; i < m.NbRows; i++)
+            {
+                if (m.GetValue(i, j) < min)
+                    min = m.GetValue(i, j);
+            }
+
+            if (min != float.PositiveInfinity && min > 0)
+            {
+                for (int i = 0; i < m.NbRows; i++)
+                {
+                    float val = m.GetValue(i, j);
+                    m.SetValue(i, j, val - min);
+                }
+
+                reduction += min;
+            }
+        }
+
+        return reduction;
+    }
 
         // Renvoie le regret de valeur maximale dans la matrice de coûts `m` sous la forme d'un tuple `(int i, int j, float value)`
         // où `i`, `j`, et `value` contiennent respectivement la ligne, la colonne et la valeur du regret maximale
         public static (int i, int j, float value) GetMaxRegret(Matrix m)
         {
             // TODO : implémenter
-            return (0, 0, 0.0f);
+            int bestI = 0;
+            int bestJ = 0;
+            float maxregrert = -1;
 
+            for (int i = 0; i < m.NbRows; i++)
+            {
+                for (int j = 0; j < m.NbColumns; j++)
+                {
+                    if (m.GetValue(i, j) == 0)
+                    {
+                        float minRow = float.PositiveInfinity;
+                        float minCol = float.PositiveInfinity;
+
+                        for (int k = 0; k < m.NbColumns; k++)
+                            if (k != j)
+                                minRow = Math.Min(minRow, m.GetValue(i, k));
+
+                        for (int k = 0; k < m.NbRows; k++)
+                            if (k != i)
+                                minCol = Math.Min(minCol, m.GetValue(k, j));
+
+                        float regret = minRow + minCol;
+
+                        if (regret > maxregrert)
+                        {
+                            maxregrert = regret;
+                            bestI = i;
+                            bestJ = j;
+                        }
+                    }
+                }
+            }
+
+            return (bestI, bestJ, maxregrert);
         }
+        
 
         /* Renvoie vrai si le segment `segment` est un trajet parasite, c'est-à-dire s'il ferme prématurément la tournée incluant les trajets contenus dans `includedSegments`
          * Une tournée est incomplète si elle visite un nombre de villes inférieur à `nbCities`
