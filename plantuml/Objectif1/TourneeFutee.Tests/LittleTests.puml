@@ -1,0 +1,10 @@
+@startuml
+class LittleTests {
+    + ReductionTest() : void
+    + RegretTest() : void
+    + ForbiddenSegmentsTest_ReverseSegment() : void
+    + ForbiddenSegmentsTest_Subtour() : void
+    + LittleSymetricCosts() : void
+    + LittleAsymetricCosts() : void
+}
+@enduml

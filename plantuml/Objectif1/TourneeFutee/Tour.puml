@@ -1,0 +1,10 @@
+@startuml
+class Tour {
+    + Tour()
+    + Cost : float <<get>>
+    + NbSegments : int <<get>>
+    + ContainsSegment(segment:(string source, string destination)) : bool
+    + Print() : void
+    + AjouterSegment(source:string, destination:string, weight:float) : void
+}
+@enduml

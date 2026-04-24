@@ -1,0 +1,24 @@
+@startuml
+class GraphTests {
+    + EmptyGraph() : void
+    + AddVertex_VertexAdded() : void
+    + AddVertex_NoEdge() : void
+    + AddDuplicateVertex() : void
+    + RemoveUnexistingVertex() : void
+    + RemoveVertex_VertexRemoved() : void
+    + RemoveVertex_EdgesRemoved() : void
+    + GetUnexistingVertexValue() : void
+    + SetUnexistingVertexValue() : void
+    + SetVertexValue() : void
+    + AddEdge() : void
+    + AddDuplicateEdge() : void
+    + AddEdgeUnexistingVertex() : void
+    + RemoveEdgeUnexistingVertex() : void
+    + RemoveUnexistingEdge() : void
+    + RemoveEdge() : void
+    + GetEdgeWeightUnexistingVertex() : void
+    + GetUnexistingEdgeWeight() : void
+    + SetEdgeWeightUnexistingVertex() : void
+    + SetEdgeWeight() : void
+}
+@enduml

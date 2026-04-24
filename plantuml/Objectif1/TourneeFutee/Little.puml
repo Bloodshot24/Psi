@@ -1,0 +1,9 @@
+@startuml
+class Little {
+    + Little(graph:Graph)
+    + ComputeOptimalTour() : Tour
+    + {static} ReduceMatrix(m:Matrix) : float
+    + {static} GetMaxRegret(m:Matrix) : (int i, int j, float value)
+    + {static} IsForbiddenSegment(segment:(string source, string destination), includedSegments:List<(string source, string destination)>, nbCities:int) : bool
+}
+@enduml
