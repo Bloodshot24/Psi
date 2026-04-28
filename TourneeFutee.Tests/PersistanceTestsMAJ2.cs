@@ -144,7 +144,7 @@ namespace TourneeFutee.Tests
         // ─────────────────────────────────────────────────────────────────────
         // TEST 3 : SaveGraph + LoadGraph (graphe simple)
         // ─────────────────────────────────────────────────────────────────────
-/*
+
         /// <summary>
         /// Vérifie que le graphe rechargé est identique au graphe sauvegardé :
         /// même nombre de sommets, mêmes noms, mêmes valeurs, mêmes poids d'arcs.
@@ -183,7 +183,7 @@ namespace TourneeFutee.Tests
             Assert.AreEqual(original.Directed, loaded.Directed,
                 "La propriété Directed doit être identique.");
         }
-        */
+        
         
         // ─────────────────────────────────────────────────────────────────────
         // TEST 4 : SaveGraph + LoadGraph (graphe asymétrique)
@@ -217,7 +217,7 @@ namespace TourneeFutee.Tests
         // ─────────────────────────────────────────────────────────────────────
         // TEST 5 : SaveTour
         // ─────────────────────────────────────────────────────────────────────
-        /*
+        
         /// <summary>
         /// Vérifie que SaveTour retourne un identifiant valide (> 0).
         /// </summary>
@@ -234,11 +234,11 @@ namespace TourneeFutee.Tests
             Assert.IsTrue(tourId > 0,
                 $"SaveTour doit retourner un id > 0. Obtenu : {tourId}");
         }
-        */
+        
         // ─────────────────────────────────────────────────────────────────────
         // TEST 6 : SaveTour + LoadTour
         // ─────────────────────────────────────────────────────────────────────
-        /*
+        
         /// <summary>
         /// Vérifie que la tournée rechargée est identique à la tournée sauvegardée :
         /// même séquence de sommets et même coût total.
@@ -272,7 +272,7 @@ namespace TourneeFutee.Tests
                     $"Étape {i} incorrecte. Attendu : '{sequence[i]}', obtenu : '{loadedSeq[i]}'.");
             }
         }
-        */
+        
         // ─────────────────────────────────────────────────────────────────────
         // TEST 7 : Plusieurs graphes coexistant en base
         // ─────────────────────────────────────────────────────────────────────
