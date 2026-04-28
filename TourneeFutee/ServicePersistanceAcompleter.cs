@@ -17,11 +17,30 @@ namespace TourneeFutee
 
         // TODO : si vous avez besoin de maintenir une connexion ouverte,
         //        ajoutez un attribut MySqlConnection ici.
-
+        private MySqlConnection _connection;
         // ─────────────────────────────────────────────────────────────────────
         // Constructeur
         // ─────────────────────────────────────────────────────────────────────
-
+        public ServicePersistance()
+        {
+            // TODO : initialiser la chaîne de connexion (ex. à partir d'un fichier de config)
+            _connectionString = "server=localhost;database=projet_psi;uid=root;pwd=Bloodshot24@;";
+            // TODO : tester la connexion dès la construction
+             using (MySqlConnection connection = new MySqlConnection(_connectionString))
+            {
+            try
+            {
+                connection.Open();
+                Console.WriteLine("Connexion réussie !");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Erreur : " + ex.Message);
+            }
+            }
+            //        (ouvrir puis fermer une connexion pour valider les paramètres)
+            throw new NotImplementedException("Constructeur non implémenté.");
+        }
         /// <summary>
         /// Instancie un service de persistance et se connecte automatiquement
         /// à la base de données <paramref name="dbname"/> sur le serveur
@@ -41,10 +60,21 @@ namespace TourneeFutee
             _connectionString = $"server={serverIp};database={dbname};uid={user};pwd={pwd};";
 
             // TODO : tester la connexion dès la construction
+                using (MySqlConnection connection = new MySqlConnection(_connectionString))
+                {
             //        (ouvrir puis fermer une connexion pour valider les paramètres)
-            throw new NotImplementedException("Constructeur non implémenté.");
+;            try
+            {
+                connection.Open();
+                Console.WriteLine("Connexion réussie !");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Erreur : " + ex.Message);
+                throw; 
+            }
         }
-
+        }
         // ─────────────────────────────────────────────────────────────────────
         // Méthodes publiques
         // ─────────────────────────────────────────────────────────────────────

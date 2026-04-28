@@ -1,9 +1,0 @@
-@startuml
-class ServicePersistance {
-    + ServicePersistance(serverIp:string, dbname:string, user:string, pwd:string)
-    + SaveGraph(g:Graph) : uint
-    + LoadGraph(id:uint) : Graph
-    + SaveTour(graphId:uint, t:Tour) : uint
-    + LoadTour(id:uint) : Tour
-}
-@enduml
