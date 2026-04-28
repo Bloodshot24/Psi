@@ -152,7 +152,7 @@ namespace TourneeFutee
         /// </summary>
         /// <param name="id">Identifiant de la tournée à charger.</param>
         /// <returns>Instance de <see cref="Tour"/> reconstituée.</returns>
-        public Tour LoadTour(uint id)
+       /* public Tour LoadTour(uint id)
         {
             // TODO : implémenter le chargement de la tournée
             //
@@ -163,7 +163,7 @@ namespace TourneeFutee
             //   3. Construire et retourner l'instance Tour
 
             throw new NotImplementedException("LoadTour non implémenté.");
-        }
+        }*/
 
         // ─────────────────────────────────────────────────────────────────────
         // Méthodes utilitaires privées (à compléter selon vos besoins)
