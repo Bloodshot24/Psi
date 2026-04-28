@@ -7,13 +7,27 @@
 
         private float cost;
         private List<(string source, string destination)> segments;
+        private List<string> vertices;
         // propriétés
 
         public Tour()
         {
             this.segments = new List<(string source, string destination)>();
             this.cost = 0;
+            this.vertices = new List<string>();
         }
+        public Tour(List<string> list, float cost)
+        {
+            for(int i =0;i<list.Count-1;i++)
+            {
+                segments.Add((list[i], list[i + 1]));
+                vertices.Add(list[i]);
+            }
+            vertices.Add(list[list.Count - 1]);
+            this.cost = cost;
+        }
+
+       public IList<string> Vertices { get; }
 
         // Coût total de la tournée
         public float Cost

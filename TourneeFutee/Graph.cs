@@ -216,12 +216,16 @@
         }
 
         // TODO : ajouter toutes les méthodes que vous jugerez pertinentes 
-
+        public bool ContainsVertex(string name)
+        {
+            return names.Contains(name);
+        }
         public List<string> Création()
         {
             return new List<string>(names);
         }
 
+       
     }
 
 
