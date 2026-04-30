@@ -1,5 +1,6 @@
 using System;
 using MySql.Data.MySqlClient;
+using Org.BouncyCastle.Bcpg;
 
 namespace TourneeFutee
 {
@@ -24,7 +25,7 @@ namespace TourneeFutee
         public ServicePersistance()
         {
             // TODO : initialiser la chaîne de connexion (ex. à partir d'un fichier de config)
-            _connectionString = "server=localhost;database=projet_psi;uid=root;pwd=Bloodshot24@;";
+            _connectionString = "server=127.0.0.1;database=tourneefutee_test;uid=root;pwd=root;";
             // TODO : tester la connexion dès la construction
              using (MySqlConnection connection = new MySqlConnection(_connectionString))
             {
@@ -99,8 +100,58 @@ namespace TourneeFutee
             // Exemple pour récupérer l'id généré :
             //   uint id = Convert.ToUInt32(cmd.ExecuteScalar());
 
-            throw new NotImplementedException("SaveGraph non implémenté.");
-        }
+            using (MySqlConnection connection = OpenConnection())
+            {
+                //Etape 1 
+                var insertGrapheCmd = new MySqlCommand("INSERT INTO Graphe (est_oriente) VALUES (@est_oriente); SELECT LAST_INSERT_ID();", connection);
+                insertGrapheCmd.Parameters.AddWithValue("@est_oriente", g.Directed ? 1 : 0);
+                insertGrapheCmd.Parameters.AddWithValue("@noEdge", /* noEdgeValue */ float.PositiveInfinity);
+                uint grapheId = Convert.ToUInt32(insertGrapheCmd.ExecuteScalar());
+
+                //Etape 2
+                List<string> noms = g.Création();
+                Dictionary<string, uint> sommetIds = new Dictionary<string, uint>();
+
+                for (int i = 0; i < noms.Count; i++)
+                {
+                    string nom = noms[i];
+                    float valeur = g.GetVertexValue(nom);
+
+                    var cmdSommet = new MySqlCommand(
+                        "INSERT INTO Sommet (graphe_id, nom, valeur, indice) VALUES (@gid, @nom, @val, @indice); SELECT LAST_INSERT_ID();",
+                        connection);
+                    cmdSommet.Parameters.AddWithValue("@gid", grapheId);
+                    cmdSommet.Parameters.AddWithValue("@nom", nom);
+                    cmdSommet.Parameters.AddWithValue("@val", valeur);
+                    cmdSommet.Parameters.AddWithValue("@indice", i);
+
+                    uint sommetId = Convert.ToUInt32(cmdSommet.ExecuteScalar());
+                    sommetIds[nom] = sommetId;
+                }
+
+                //Etape 3
+                foreach (string source in noms)
+                {
+                    foreach (string dest in g.GetNeighbors(source))
+                    {
+                        float poids = g.GetEdgeWeight(source, dest);
+
+                        var cmdArc = new MySqlCommand(
+                            "INSERT INTO Arc (graphe_id, sommet_source, sommet_dest, poids) VALUES (@gid, @src, @dst, @poids);",
+                            connection);
+                        cmdArc.Parameters.AddWithValue("@gid", grapheId);
+                        cmdArc.Parameters.AddWithValue("@src", sommetIds[source]);
+                        cmdArc.Parameters.AddWithValue("@dst", sommetIds[dest]);
+                        cmdArc.Parameters.AddWithValue("@poids", poids);
+                        cmdArc.ExecuteNonQuery();
+                    }
+                }
+
+                return grapheId;
+                }
+            }
+
+        
 
         /// <summary>
         /// Charge depuis la base de données le graphe identifié par <paramref name="id"/>
@@ -152,7 +203,7 @@ namespace TourneeFutee
         /// </summary>
         /// <param name="id">Identifiant de la tournée à charger.</param>
         /// <returns>Instance de <see cref="Tour"/> reconstituée.</returns>
-       /* public Tour LoadTour(uint id)
+        public Tour LoadTour(uint id)
         {
             // TODO : implémenter le chargement de la tournée
             //
@@ -163,7 +214,7 @@ namespace TourneeFutee
             //   3. Construire et retourner l'instance Tour
 
             throw new NotImplementedException("LoadTour non implémenté.");
-        }*/
+        }
 
         // ─────────────────────────────────────────────────────────────────────
         // Méthodes utilitaires privées (à compléter selon vos besoins)

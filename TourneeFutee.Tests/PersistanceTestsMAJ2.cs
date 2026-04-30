@@ -243,7 +243,7 @@ namespace TourneeFutee.Tests
         /// Vérifie que la tournée rechargée est identique à la tournée sauvegardée :
         /// même séquence de sommets et même coût total.
         /// </summary>
-       /* [TestMethod]
+       /*[TestMethod]
         public void SaveAndLoadTourTest()
         {
             Graph g = BuildAsymmetricGraph();
