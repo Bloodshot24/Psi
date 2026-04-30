@@ -6,8 +6,8 @@
         // TODO : ajouter tous les attributs que vous jugerez pertinents 
 
         private float cost;
-        private List<(string source, string destination)> segments;
-        private List<string> vertices;
+        private List<(string source, string destination)> segments = new List<(string source, string destination)>();
+        private List<string> vertices = new List<string>();
         // propriétés
 
         public Tour()
@@ -18,7 +18,9 @@
         }
         public Tour(List<string> list, float cost)
         {
-            for(int i =0;i<list.Count-1;i++)
+
+  
+            for (int i =0;i<list.Count-1;i++)
             {
                 segments.Add((list[i], list[i + 1]));
                 vertices.Add(list[i]);
@@ -27,7 +29,13 @@
             this.cost = cost;
         }
 
-       public IList<string> Vertices { get; }
+        public List<(string source, string destination)> GetSegments()
+        {
+            return new List<(string, string)>(segments);
+        }
+
+
+        public IList<string> Vertices { get; }
 
         // Coût total de la tournée
         public float Cost
