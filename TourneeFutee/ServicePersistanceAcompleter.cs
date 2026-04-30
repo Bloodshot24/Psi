@@ -1,5 +1,6 @@
 using System;
 using MySql.Data.MySqlClient;
+using Org.BouncyCastle.Bcpg;
 
 namespace TourneeFutee
 {
@@ -9,67 +10,37 @@ namespace TourneeFutee
 
         public ServicePersistance(string serverIp, string dbname, string user, string pwd)
         {
-            _connectionString = $"server={serverIp};database={dbname};uid={user};pwd={pwd};";
-            using (var conn = new MySqlConnection(_connectionString))
-                conn.Open(); // lève une exception si la connexion échoue
-        }
-
-        public uint SaveGraph(Graph g)
-        {
-            using (var conn = OpenConnection())
+            // TODO : initialiser la chaîne de connexion (ex. à partir d'un fichier de config)
+            _connectionString = "server=127.0.0.1;database=tourneefutee_test;uid=root;pwd=root;";
+            // TODO : tester la connexion dès la construction
+             using (MySqlConnection connection = new MySqlConnection(_connectionString))
             {
-                // Étape 1 : insérer le graphe, récupérer son id
-                var cmd = new MySqlCommand(
-                    "INSERT INTO Graphe (est_oriente, no_edge_value) VALUES (@o, @nev); SELECT LAST_INSERT_ID();",
-                    conn);
-                cmd.Parameters.AddWithValue("@o", g.Directed ? 1 : 0);
-                cmd.Parameters.AddWithValue("@nev", 0);
-                uint grapheId = Convert.ToUInt32(cmd.ExecuteScalar());
-
-                // Étape 2 : insérer chaque sommet, mémoriser son id BDD
-                List<string> noms = g.Création();
-                Dictionary<string, uint> vertexIds = new Dictionary<string, uint>();
-
-                for (int i = 0; i < noms.Count; i++)
-                {
-                    string nom = noms[i];
-                    cmd = new MySqlCommand(
-                        "INSERT INTO Sommet (graphe_id, nom, valeur, indice) VALUES (@gid, @nom, @val, @ind); SELECT LAST_INSERT_ID();",
-                        conn);
-                    cmd.Parameters.AddWithValue("@gid", grapheId);
-                    cmd.Parameters.AddWithValue("@nom", nom);
-                    cmd.Parameters.AddWithValue("@val", g.GetVertexValue(nom));
-                    cmd.Parameters.AddWithValue("@ind", i);
-                    vertexIds[nom] = Convert.ToUInt32(cmd.ExecuteScalar());
-                }
-
-                // Étape 3 : insérer les arcs existants
-                foreach (string src in noms)
-                {
-                    foreach (string dst in noms)
-                    {
-                        if (src == dst) continue;
-                        try
-                        {
-                            float poids = g.GetEdgeWeight(src, dst);
-                            cmd = new MySqlCommand(
-                                "INSERT INTO Arc (graphe_id, sommet_source, sommet_dest, poids) VALUES (@gid, @src, @dst, @p);",
-                                conn);
-                            cmd.Parameters.AddWithValue("@gid", grapheId);
-                            cmd.Parameters.AddWithValue("@src", vertexIds[src]);
-                            cmd.Parameters.AddWithValue("@dst", vertexIds[dst]);
-                            cmd.Parameters.AddWithValue("@p", poids);
-                            cmd.ExecuteNonQuery();
-                        }
-                        catch (ArgumentException) {} // pas d'arc entre src et dst
-                    }
-                }
-
-                return grapheId;
+            try
+            {
+                connection.Open();
+                Console.WriteLine("Connexion réussie !");
             }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Erreur : " + ex.Message);
+            }
+            }
+            //        (ouvrir puis fermer une connexion pour valider les paramètres)
+            throw new NotImplementedException("Constructeur non implémenté.");
         }
-
-        public Graph LoadGraph(uint id)
+        /// <summary>
+        /// Instancie un service de persistance et se connecte automatiquement
+        /// à la base de données <paramref name="dbname"/> sur le serveur
+        /// à l'adresse IP <paramref name="serverIp"/>.
+        /// Les identifiants sont définis par <paramref name="user"/> (utilisateur)
+        /// et <paramref name="pwd"/> (mot de passe).
+        /// </summary>
+        /// <param name="serverIp">Adresse IP du serveur MySQL.</param>
+        /// <param name="dbname">Nom de la base de données.</param>
+        /// <param name="user">Nom d'utilisateur.</param>
+        /// <param name="pwd">Mot de passe.</param>
+        /// <exception cref="Exception">Levée si la connexion échoue.</exception>
+        public ServicePersistance(string serverIp, string dbname, string user, string pwd)
         {
             using (var conn = OpenConnection())
             {
@@ -147,6 +118,56 @@ namespace TourneeFutee
                     cmd.Parameters.AddWithValue("@gid", graphId);
                     uint sommetId = Convert.ToUInt32(cmd.ExecuteScalar());
 
+            using (MySqlConnection connection = OpenConnection())
+            {
+                //Etape 1 
+                var insertGrapheCmd = new MySqlCommand("INSERT INTO Graphe (est_oriente) VALUES (@est_oriente); SELECT LAST_INSERT_ID();", connection);
+                insertGrapheCmd.Parameters.AddWithValue("@est_oriente", g.Directed ? 1 : 0);
+                insertGrapheCmd.Parameters.AddWithValue("@noEdge", /* noEdgeValue */ float.PositiveInfinity);
+                uint grapheId = Convert.ToUInt32(insertGrapheCmd.ExecuteScalar());
+
+                //Etape 2
+                List<string> noms = g.Création();
+                Dictionary<string, uint> sommetIds = new Dictionary<string, uint>();
+
+                for (int i = 0; i < noms.Count; i++)
+                {
+                    string nom = noms[i];
+                    float valeur = g.GetVertexValue(nom);
+
+                    var cmdSommet = new MySqlCommand(
+                        "INSERT INTO Sommet (graphe_id, nom, valeur, indice) VALUES (@gid, @nom, @val, @indice); SELECT LAST_INSERT_ID();",
+                        connection);
+                    cmdSommet.Parameters.AddWithValue("@gid", grapheId);
+                    cmdSommet.Parameters.AddWithValue("@nom", nom);
+                    cmdSommet.Parameters.AddWithValue("@val", valeur);
+                    cmdSommet.Parameters.AddWithValue("@indice", i);
+
+                    uint sommetId = Convert.ToUInt32(cmdSommet.ExecuteScalar());
+                    sommetIds[nom] = sommetId;
+                }
+
+                //Etape 3
+                foreach (string source in noms)
+                {
+                    foreach (string dest in g.GetNeighbors(source))
+                    {
+                        float poids = g.GetEdgeWeight(source, dest);
+
+                        var cmdArc = new MySqlCommand(
+                            "INSERT INTO Arc (graphe_id, sommet_source, sommet_dest, poids) VALUES (@gid, @src, @dst, @poids);",
+                            connection);
+                        cmdArc.Parameters.AddWithValue("@gid", grapheId);
+                        cmdArc.Parameters.AddWithValue("@src", sommetIds[source]);
+                        cmdArc.Parameters.AddWithValue("@dst", sommetIds[dest]);
+                        cmdArc.Parameters.AddWithValue("@poids", poids);
+                        cmdArc.ExecuteNonQuery();
+                    }
+                }
+
+                return grapheId;
+                }
+            }
                     cmd = new MySqlCommand(
                         "INSERT INTO EtapeTournee (tournee_id, numero_ordre, sommet_id) VALUES (@tid, @ord, @sid);",
                         conn);
@@ -156,6 +177,27 @@ namespace TourneeFutee
                     cmd.ExecuteNonQuery();
                 }
 
+        
+
+        /// <summary>
+        /// Charge depuis la base de données le graphe identifié par <paramref name="id"/>
+        /// et renvoie une instance de la classe <see cref="Graph"/>.
+        /// </summary>
+        /// <param name="id">Identifiant du graphe à charger.</param>
+        /// <returns>Instance de <see cref="Graph"/> reconstituée.</returns>
+        public Graph LoadGraph(uint id)
+        {
+            // TODO : implémenter le chargement du graphe
+            //
+            // Ordre recommandé :
+            //   1. SELECT dans Graphe WHERE id = @id -> récupérer IsOriented, etc.
+            //   2. SELECT dans Sommet WHERE graphe_id = @id -> reconstruire les sommets
+            //      (respecter l'ordre d'insertion pour que les indices de la matrice
+            //       correspondent à ceux sauvegardés)
+            //   3. SELECT dans Arc WHERE graphe_id = @id -> reconstruire la matrice
+            //      d'adjacence en utilisant les correspondances sommet_id <-> indice
+
+            throw new NotImplementedException("LoadGraph non implémenté.");
                 return tourneeId;
             }
         }
@@ -189,6 +231,21 @@ namespace TourneeFutee
                 using (var reader = cmd.ExecuteReader())
                     while (reader.Read())
                         sequence.Add(reader["nom"].ToString());
+        /// <summary>
+        /// Charge depuis la base de données la tournée identifiée par <paramref name="id"/>
+        /// et renvoie une instance de la classe <see cref="Tour"/>.
+        /// </summary>
+        /// <param name="id">Identifiant de la tournée à charger.</param>
+        /// <returns>Instance de <see cref="Tour"/> reconstituée.</returns>
+        public Tour LoadTour(uint id)
+        {
+            // TODO : implémenter le chargement de la tournée
+            //
+            // Ordre recommandé :
+            //   1. SELECT dans Tournee WHERE id = @id -> récupérer cout_total et graphe_id
+            //   2. SELECT dans EtapeTournee JOIN Sommet WHERE tournee_id = @id
+            //      ORDER BY numero_ordre -> reconstruire la séquence ordonnée de sommets
+            //   3. Construire et retourner l'instance Tour
 
                 // Étape 3 : reconstruire les segments avec les poids
                 Tour tour = new Tour();
