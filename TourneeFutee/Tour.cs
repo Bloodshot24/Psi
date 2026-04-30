@@ -35,7 +35,10 @@
         }
 
 
-        public IList<string> Vertices { get; }
+        public IList<string> Vertices 
+        { 
+            get { return (IList<string>)vertices; } 
+        }
 
         // Coût total de la tournée
         public float Cost

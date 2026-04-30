@@ -13,20 +13,19 @@ namespace TourneeFutee
             // TODO : initialiser la chaîne de connexion (ex. à partir d'un fichier de config)
             _connectionString = "server=127.0.0.1;database=tourneefutee_test;uid=root;pwd=root;";
             // TODO : tester la connexion dès la construction
-             using (MySqlConnection connection = new MySqlConnection(_connectionString))
+            using (MySqlConnection connection = new MySqlConnection(_connectionString))
             {
-            try
-            {
-                connection.Open();
-                Console.WriteLine("Connexion réussie !");
+                try
+                {
+                    connection.Open();
+                    Console.WriteLine("Connexion réussie !");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Erreur : " + ex.Message);
+                }
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Erreur : " + ex.Message);
-            }
-            }
-            //        (ouvrir puis fermer une connexion pour valider les paramètres)
-            throw new NotImplementedException("Constructeur non implémenté.");
+            //throw new NotImplementedException("Constructeur non implémenté.");
         }
         /// <summary>
         /// Instancie un service de persistance et se connecte automatiquement
@@ -40,7 +39,7 @@ namespace TourneeFutee
         /// <param name="user">Nom d'utilisateur.</param>
         /// <param name="pwd">Mot de passe.</param>
         /// <exception cref="Exception">Levée si la connexion échoue.</exception>
-        public ServicePersistance(string serverIp, string dbname, string user, string pwd)
+        public Graph LoadGraph(uint id)
         {
             using (var conn = OpenConnection())
             {
@@ -92,35 +91,16 @@ namespace TourneeFutee
             }
         }
 
-        public uint SaveTour(uint graphId, Tour t)
+        /// <summary>
+        /// Sauvegarde un graphe dans la base de données.
+        /// </summary>
+        /// <param name="g">Le graphe à sauvegarder.</param>
+        /// <returns>L'ID du graphe inséré.</returns>
+        public uint SaveGraph(Graph g)
         {
-            using (var conn = OpenConnection())
-            {
-                // Étape 1 : insérer la tournée
-                var cmd = new MySqlCommand(
-                    "INSERT INTO Tournee (graphe_id, cout_total) VALUES (@gid, @cout); SELECT LAST_INSERT_ID();",
-                    conn);
-                cmd.Parameters.AddWithValue("@gid", graphId);
-                cmd.Parameters.AddWithValue("@cout", t.Cost);
-                uint tourneeId = Convert.ToUInt32(cmd.ExecuteScalar());
-
-                // Étape 2 : insérer chaque étape avec son numéro d'ordre
-                var segments = t.GetSegments();
-                for (int i = 0; i < segments.Count; i++)
-                {
-                    string srcNom = segments[i].source;
-
-                    // Trouver l'id BDD du sommet source
-                    cmd = new MySqlCommand(
-                        "SELECT id FROM Sommet WHERE nom = @nom AND graphe_id = @gid;",
-                        conn);
-                    cmd.Parameters.AddWithValue("@nom", srcNom);
-                    cmd.Parameters.AddWithValue("@gid", graphId);
-                    uint sommetId = Convert.ToUInt32(cmd.ExecuteScalar());
-
             using (MySqlConnection connection = OpenConnection())
             {
-                //Etape 1 
+                // Étape 1 : insérer le graphe
                 var insertGrapheCmd = new MySqlCommand("INSERT INTO Graphe (est_oriente) VALUES (@est_oriente); SELECT LAST_INSERT_ID();", connection);
                 insertGrapheCmd.Parameters.AddWithValue("@est_oriente", g.Directed ? 1 : 0);
                 insertGrapheCmd.Parameters.AddWithValue("@noEdge", /* noEdgeValue */ float.PositiveInfinity);
@@ -166,8 +146,42 @@ namespace TourneeFutee
                 }
 
                 return grapheId;
-                }
             }
+        }
+
+        /// <summary>
+        /// Sauvegarde une tournée dans la base de données.
+        /// </summary>
+        /// <param name="graphId">L'ID du graphe associé.</param>
+        /// <param name="t">La tournée à sauvegarder.</param>
+        /// <returns>L'ID de la tournée insérée.</returns>
+        public uint SaveTour(uint graphId, Tour t)
+        {
+            using (var conn = OpenConnection())
+            {
+                // Étape 1 : insérer la tournée
+                var cmd = new MySqlCommand(
+                    "INSERT INTO Tournee (graphe_id, cout_total) VALUES (@gid, @cout); SELECT LAST_INSERT_ID();",
+                    conn);
+                cmd.Parameters.AddWithValue("@gid", graphId);
+                cmd.Parameters.AddWithValue("@cout", t.Cost);
+                uint tourneeId = Convert.ToUInt32(cmd.ExecuteScalar());
+
+                // Étape 2 : insérer chaque étape avec son numéro d'ordre
+                var segments = t.GetSegments();
+                for (int i = 0; i < segments.Count; i++)
+                {
+                    string srcNom = segments[i].source;
+
+                    // Trouver l'id BDD du sommet source
+                    cmd = new MySqlCommand(
+                        "SELECT id FROM Sommet WHERE nom = @nom AND graphe_id = @gid;",
+                        conn);
+                    cmd.Parameters.AddWithValue("@nom", srcNom);
+                    cmd.Parameters.AddWithValue("@gid", graphId);
+                    uint sommetId = Convert.ToUInt32(cmd.ExecuteScalar());
+
+                    // Insérer l'étape
                     cmd = new MySqlCommand(
                         "INSERT INTO EtapeTournee (tournee_id, numero_ordre, sommet_id) VALUES (@tid, @ord, @sid);",
                         conn);
@@ -177,31 +191,39 @@ namespace TourneeFutee
                     cmd.ExecuteNonQuery();
                 }
 
-        
+                // Étape 3 : enregistrer la destination du dernier segment pour compléter la tournée
+                if (segments.Count > 0)
+                {
+                    string lastDestNom = segments[segments.Count - 1].destination;
 
-        /// <summary>
-        /// Charge depuis la base de données le graphe identifié par <paramref name="id"/>
-        /// et renvoie une instance de la classe <see cref="Graph"/>.
-        /// </summary>
-        /// <param name="id">Identifiant du graphe à charger.</param>
-        /// <returns>Instance de <see cref="Graph"/> reconstituée.</returns>
-        public Graph LoadGraph(uint id)
-        {
-            // TODO : implémenter le chargement du graphe
-            //
-            // Ordre recommandé :
-            //   1. SELECT dans Graphe WHERE id = @id -> récupérer IsOriented, etc.
-            //   2. SELECT dans Sommet WHERE graphe_id = @id -> reconstruire les sommets
-            //      (respecter l'ordre d'insertion pour que les indices de la matrice
-            //       correspondent à ceux sauvegardés)
-            //   3. SELECT dans Arc WHERE graphe_id = @id -> reconstruire la matrice
-            //      d'adjacence en utilisant les correspondances sommet_id <-> indice
+                    // Trouver l'id BDD du dernier sommet
+                    cmd = new MySqlCommand(
+                        "SELECT id FROM Sommet WHERE nom = @nom AND graphe_id = @gid;",
+                        conn);
+                    cmd.Parameters.AddWithValue("@nom", lastDestNom);
+                    cmd.Parameters.AddWithValue("@gid", graphId);
+                    uint sommetId = Convert.ToUInt32(cmd.ExecuteScalar());
 
-            throw new NotImplementedException("LoadGraph non implémenté.");
+                    // Insérer l'étape finale
+                    cmd = new MySqlCommand(
+                        "INSERT INTO EtapeTournee (tournee_id, numero_ordre, sommet_id) VALUES (@tid, @ord, @sid);",
+                        conn);
+                    cmd.Parameters.AddWithValue("@tid", tourneeId);
+                    cmd.Parameters.AddWithValue("@ord", segments.Count);
+                    cmd.Parameters.AddWithValue("@sid", sommetId);
+                    cmd.ExecuteNonQuery();
+                }
+
                 return tourneeId;
             }
         }
 
+        /// <summary>
+        /// Charge depuis la base de données la tournée identifiée par <paramref name="id"/>
+        /// et renvoie une instance de la classe <see cref="Tour"/>.
+        /// </summary>
+        /// <param name="id">Identifiant de la tournée à charger.</param>
+        /// <returns>Instance de <see cref="Tour"/> reconstituée.</returns>
         public Tour LoadTour(uint id)
         {
             using (var conn = OpenConnection())
@@ -229,30 +251,19 @@ namespace TourneeFutee
 
                 List<string> sequence = new List<string>();
                 using (var reader = cmd.ExecuteReader())
+                {
                     while (reader.Read())
                         sequence.Add(reader["nom"].ToString());
-        /// <summary>
-        /// Charge depuis la base de données la tournée identifiée par <paramref name="id"/>
-        /// et renvoie une instance de la classe <see cref="Tour"/>.
-        /// </summary>
-        /// <param name="id">Identifiant de la tournée à charger.</param>
-        /// <returns>Instance de <see cref="Tour"/> reconstituée.</returns>
-        public Tour LoadTour(uint id)
-        {
-            // TODO : implémenter le chargement de la tournée
-            //
-            // Ordre recommandé :
-            //   1. SELECT dans Tournee WHERE id = @id -> récupérer cout_total et graphe_id
-            //   2. SELECT dans EtapeTournee JOIN Sommet WHERE tournee_id = @id
-            //      ORDER BY numero_ordre -> reconstruire la séquence ordonnée de sommets
-            //   3. Construire et retourner l'instance Tour
+                }
 
-                // Étape 3 : reconstruire les segments avec les poids
-                Tour tour = new Tour();
+                // Étape 3 : calculer le coût total et reconstruire la Tour avec le constructeur
+                float totalCost = 0f;
                 Graph g = LoadGraph(grapheId);
                 for (int i = 0; i < sequence.Count - 1; i++)
-                    tour.AjouterSegment(sequence[i], sequence[i + 1], g.GetEdgeWeight(sequence[i], sequence[i + 1]));
+                    totalCost += g.GetEdgeWeight(sequence[i], sequence[i + 1]);
 
+                // Créer la Tour avec le constructeur complet pour remplir vertices et segments correctement
+                Tour tour = new Tour(sequence, totalCost);
                 return tour;
             }
         }
