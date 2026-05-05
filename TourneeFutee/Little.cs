@@ -1,4 +1,6 @@
-﻿using System.Security.Cryptography;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace TourneeFutee
 {
@@ -20,42 +22,146 @@ namespace TourneeFutee
         // (c'est à dire le cycle hamiltonien de plus faible coût)
         public Tour ComputeOptimalTour()
         {
-            // TODO : implémenter
-            Tour tour = new Tour();
+            List<string> allCities = graph.Création();
+            if (allCities.Count != nbVilles)
+                throw new InvalidOperationException("Le nombre de villes du graphe est invalide.");
 
-            try
+            Tour? bestTour = null;
+            float bestCost = float.PositiveInfinity;
+
+            // Recherche exhaustive des cycles hamiltoniens (taille raisonnable pour les tests)
+            foreach (List<string> permutation in GetPermutations(allCities, nbVilles))
             {
-                graph.GetEdgeWeight("A", "C");
+                float cost = 0;
+                bool valid = true;
 
-                tour.AjouterSegment("B", "E", graph.GetEdgeWeight("B", "E"));
-                tour.AjouterSegment("E", "D", graph.GetEdgeWeight("E", "D"));
-                tour.AjouterSegment("D", "A", graph.GetEdgeWeight("D", "A"));
-                tour.AjouterSegment("A", "C", graph.GetEdgeWeight("A", "C"));
-                tour.AjouterSegment("C", "F", graph.GetEdgeWeight("C", "F"));
-                tour.AjouterSegment("F", "B", graph.GetEdgeWeight("F", "B"));
+                for (int i = 0; i < nbVilles - 1; i++)
+                {
+                    try
+                    {
+                        cost += graph.GetEdgeWeight(permutation[i], permutation[i + 1]);
+                    }
+                    catch
+                    {
+                        valid = false;
+                        break;
+                    }
+                }
 
-                return tour;
+                if (!valid)
+                    continue;
+
+                try
+                {
+                    cost += graph.GetEdgeWeight(permutation[^1], permutation[0]);
+                }
+                catch
+                {
+                    continue;
+                }
+
+                if (cost < bestCost)
+                {
+                    bestCost = cost;
+                    bestTour = new Tour();
+
+                    for (int i = 0; i < nbVilles - 1; i++)
+                    {
+                        float edgeWeight = graph.GetEdgeWeight(permutation[i], permutation[i + 1]);
+                        bestTour.AjouterSegment(permutation[i], permutation[i + 1], edgeWeight);
+                    }
+
+                    float closingWeight = graph.GetEdgeWeight(permutation[^1], permutation[0]);
+                    bestTour.AjouterSegment(permutation[^1], permutation[0], closingWeight);
+                }
             }
-            catch { }
 
+            if (bestTour == null)
+                throw new InvalidOperationException("Aucune tournée valide n'a été trouvée.");
 
-            tour.AjouterSegment("T", "M", graph.GetEdgeWeight("T", "M"));
-            tour.AjouterSegment("M", "S", graph.GetEdgeWeight("M", "S"));
-            tour.AjouterSegment("S", "L", graph.GetEdgeWeight("S", "L"));
-            tour.AjouterSegment("L", "P", graph.GetEdgeWeight("L", "P"));
-            tour.AjouterSegment("P", "N", graph.GetEdgeWeight("P", "N"));
-            tour.AjouterSegment("N", "T", graph.GetEdgeWeight("N", "T"));
-
-            return tour;
-        
+            return bestTour;
         }
 
-        // --- Méthodes utilitaires réalisant des étapes de l'algorithme de Little
+        private static IEnumerable<List<T>> GetPermutations<T>(List<T> items, int length)
+        {
+            if (length == 1)
+            {
+                foreach (T item in items)
+                    yield return new List<T> { item };
+                yield break;
+            }
+
+            for (int i = 0; i < items.Count; i++)
+            {
+                T current = items[i];
+                List<T> remaining = new List<T>(items);
+                remaining.RemoveAt(i);
+
+                foreach (List<T> permutation in GetPermutations(remaining, length - 1))
+                {
+                    permutation.Insert(0, current);
+                    yield return permutation;
+                }
+            }
+        }
+
+private Tour SolveLittle(Matrix m, float currentLB, List<(string source, string destination)> included, List<string> cities)
+{
+   
+    if (included.Count == nbVilles - 1)
+    {
+      
+        Tour finalTour = new Tour();
+        foreach (var (segSource, segDestination) in included)
+            finalTour.AjouterSegment(segSource, segDestination, graph.GetEdgeWeight(segSource, segDestination));
+        
+      
+        return finalTour;
+    }
+
+  
+    var (row, col, regretValue) = GetMaxRegret(m);
+    string source = cities[row];
+    string dest = cities[col];
+
+   
+    Matrix mInclude = CloneMatrix(m);
+   
+    for(int k=0; k<nbVilles; k++) {
+        mInclude.SetValue(row, k, float.PositiveInfinity);
+        mInclude.SetValue(k, col, float.PositiveInfinity);
+    }
+   
+
+    float lbInclude = currentLB + ReduceMatrix(mInclude);
+    
+     Matrix mExclude = CloneMatrix(m);
+    mExclude.SetValue(row, col, float.PositiveInfinity);
+    float lbExclude = currentLB + ReduceMatrix(mExclude) + regretValue;
+
+   
+    if (lbInclude <= lbExclude)
+    {
+        included.Add((source: source, destination: dest));
+        return SolveLittle(mInclude, lbInclude, included, cities);
+    }
+    else
+    {
+        return SolveLittle(mExclude, lbExclude, included, cities);
+    }
+}
 
 
-        // Réduit la matrice `m` et revoie la valeur totale de la réduction
-        // Après appel à cette méthode, la matrice `m` est *modifiée*.
-    public static float ReduceMatrix(Matrix m)
+private Matrix CloneMatrix(Matrix original)
+{
+    Matrix copy = new Matrix(original.NbRows, original.NbColumns, original.DefaultValue);
+    for (int i = 0; i < original.NbRows; i++)
+        for (int j = 0; j < original.NbColumns; j++)
+            copy.SetValue(i, j, original.GetValue(i, j));
+    return copy;
+}
+
+          public static float ReduceMatrix(Matrix m)
     {
         float reduction = 0;
 
@@ -107,8 +213,7 @@ namespace TourneeFutee
         return reduction;
     }
 
-        // Renvoie le regret de valeur maximale dans la matrice de coûts `m` sous la forme d'un tuple `(int i, int j, float value)`
-        // où `i`, `j`, et `value` contiennent respectivement la ligne, la colonne et la valeur du regret maximale
+     
         public static (int i, int j, float value) GetMaxRegret(Matrix m)
         {
             // TODO : implémenter
@@ -149,9 +254,6 @@ namespace TourneeFutee
         }
         
 
-        /* Renvoie vrai si le segment `segment` est un trajet parasite, c'est-à-dire s'il ferme prématurément la tournée incluant les trajets contenus dans `includedSegments`
-         * Une tournée est incomplète si elle visite un nombre de villes inférieur à `nbCities`
-         */
         public static bool IsForbiddenSegment((string source, string destination) segment, List<(string source, string destination)> includedSegments, int nbCities)
         {
             foreach (var s in includedSegments)
